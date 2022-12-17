@@ -12,6 +12,8 @@ from sklearn.cluster import AgglomerativeClustering, SpectralClustering, KMeans
 from sklearn.neighbors import kneighbors_graph
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+from sklearn.feature_selection import SelectKBest, f_classif
+import pandas as pd
 
 ##Functions
 
@@ -131,9 +133,41 @@ iso_features = iso(image_matrix)
 image_features = np.hstack((PCA_features, np.hstack((kernelPCA_features,iso_features))))
 
 image_features =stds(image_features)
-from sklearn.feature_selection import VarianceThreshold
-sel = VarianceThreshold(threshold=(0.7))
-image_features = sel.fit_transform(image_features)
+
+selector = SelectKBest(f_classif, k=5)
+X_train = []
+y_train = []
+for i in range (len(labels)):
+    if labels[i] != 0:
+        X_train.append(image_features[i])
+        y_train.append(labels[i])
+
+selector.fit(X_train, y_train)
+scores = -np.log10(selector.pvalues_)
+scores /= scores.max()
+
+X_indices = np.arange(image_features.shape[-1])
+plt.figure(1)
+plt.clf()
+plt.bar(X_indices, scores, width=0.2)
+plt.title("Feature univariate score")
+plt.xlabel("Feature number")
+plt.ylabel("Univariate score ($-Log(p_{value})$)")
+plt.xticks(np.arange(0,18,1))
+plt.show()
+
+#After analysis of the plot we concluded that there are 5 features with significant values then k=5. 
+image_features = selector.transform(image_features) 
+
+
+#df = pd.DataFrame(images_new, columns = ['0','1','2','3','4'])#,'5','6','7','8','9','10','11','12','13','14','15','16','17'])
+df = pd.DataFrame(image_features, columns = np.arange(0,5,1))
+pd.plotting.scatter_matrix(df, hist_kwds={'bins':30})
+
+#After visual analysis of the scatter matrix plot, we concluded that that features 0 and 3, from
+#the 5 best selected are redundant
+image_features = image_features[:, 1:5]
+
 
 agg_matrix = np.zeros((5, 9))
 spectral_matrix = np.zeros((5, 9))
@@ -158,6 +192,7 @@ for n in clusterArray:
     print("Purity:", purity_agg)
     agg_matrix[4][n-2] = purity_agg
     
+    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
     if n == 6:
     	aux.report_clusters(np.array(range(image_features.shape[0])), agg_clust_pred, "test.html")
     
@@ -176,6 +211,7 @@ for n in clusterArray:
     print("Purity:", purity_spe)
     spectral_matrix[4][n-2] = purity_spe
     
+    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
     if n == 10:
         aux.report_clusters(np.array(range(image_features.shape[0])), spectral_clust_pred, "test2.html")
     
@@ -195,6 +231,7 @@ for n in clusterArray:
     kmeans_matrix[4][n-2] = purity_kmeans
     print("K-means loss / SSE:", sse_kmeans)
     
+    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
     if n==8:
         aux.report_clusters(np.array(range(image_features.shape[0])), kmeans_clust_pred, "test3.html")
     
@@ -222,8 +259,6 @@ for i in range(0,2):
         counter+=1
         if counter == 5:
             break
-
-
 
 
 
