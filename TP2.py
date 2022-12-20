@@ -134,6 +134,7 @@ image_features = np.hstack((PCA_features, np.hstack((kernelPCA_features,iso_feat
 
 image_features =stds(image_features)
 
+#Code inspired in the SkLearn documentation
 selector = SelectKBest(f_classif, k=5)
 X_train = []
 y_train = []
@@ -163,6 +164,8 @@ image_features = selector.transform(image_features)
 #df = pd.DataFrame(images_new, columns = ['0','1','2','3','4'])#,'5','6','7','8','9','10','11','12','13','14','15','16','17'])
 df = pd.DataFrame(image_features, columns = np.arange(0,5,1))
 pd.plotting.scatter_matrix(df, hist_kwds={'bins':30})
+plt.suptitle('Scatter matrix')
+plt.show()
 
 #After visual analysis of the scatter matrix plot, we concluded that that features 0 and 3, from
 #the 5 best selected are redundant
@@ -172,6 +175,7 @@ image_features = image_features[:, 1:5]
 agg_matrix = np.zeros((5, 9))
 spectral_matrix = np.zeros((5, 9))
 kmeans_matrix = np.zeros((5, 9))
+kmeansloss = []
 
 ###Clustering
 clusterArray = np.arange(2, 11, 1)
@@ -194,7 +198,7 @@ for n in clusterArray:
     
     #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
     if n == 6:
-    	aux.report_clusters(np.array(range(image_features.shape[0])), agg_clust_pred, "test.html")
+    	aux.report_clusters(np.array(range(image_features.shape[0])), agg_clust_pred, "testAgg6.html")
     
     #Spectral
     spectral_clust_pred = spectral_clust(n, image_features)
@@ -212,8 +216,8 @@ for n in clusterArray:
     spectral_matrix[4][n-2] = purity_spe
     
     #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
-    if n == 10:
-        aux.report_clusters(np.array(range(image_features.shape[0])), spectral_clust_pred, "test2.html")
+    if n == 6:
+        aux.report_clusters(np.array(range(image_features.shape[0])), spectral_clust_pred, "testSpe6.html")
     
     #K-means
     kmeans_clust_pred, sse_kmeans = k_means_clust(n, image_features)
@@ -230,14 +234,16 @@ for n in clusterArray:
     print("Purity:", purity_kmeans)
     kmeans_matrix[4][n-2] = purity_kmeans
     print("K-means loss / SSE:", sse_kmeans)
+    kmeansloss.append(sse_kmeans)
     
     #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
-    if n==8:
-        aux.report_clusters(np.array(range(image_features.shape[0])), kmeans_clust_pred, "test3.html")
+    if n==6:
+        aux.report_clusters(np.array(range(image_features.shape[0])), kmeans_clust_pred, "testKmeans6.html")
     
 
 fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(10,8))
 fig.subplots_adjust(right=1.5, hspace=0.4)
+fig.suptitle('External Indexes')
 titleArray = ["Precision", "Recall", "Rand", "F1", "Purity"]
 counter = 0
 
@@ -261,7 +267,12 @@ for i in range(0,2):
             break
 
 
-
+# Plot training vs cross validation error, parameter h tuning
+fig, ax = plt.subplots()
+plt.xlabel('Number of clusters')
+plt.ylabel('K-means loss')
+plt.plot(clusterArray, kmeansloss, '-b')
+plt.show()
 
 
 
