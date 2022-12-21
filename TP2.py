@@ -9,14 +9,12 @@ from sklearn.decomposition import PCA, KernelPCA
 from sklearn.manifold import Isomap
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering, SpectralClustering, KMeans
-from sklearn.neighbors import kneighbors_graph
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from sklearn.feature_selection import SelectKBest, f_classif
 import pandas as pd
 
 ##Functions
-
 def pca (matrix):
     pca = PCA(n_components=6)
     pca.fit(matrix)
@@ -40,9 +38,6 @@ def stds (d):
     return d
 
 def agg_clust (n_clusters, matrix):
-    #para efeitos de analise pode ser metido connectivity constraints
-    #connectivity = kneighbors_graph(matrix, n_neighbors=20, include_self=False)
-    #ward = AgglomerativeClustering(n_clusters=n_clusters, connectivity = connectivity)
     ward = AgglomerativeClustering(n_clusters=n_clusters)
     pred = ward.fit_predict(matrix)
     return pred
@@ -125,7 +120,7 @@ def returnExternalIndexes(clust_pred, labels, n_clusters, labelsLabeled):
 labels = np.loadtxt("labels.txt", delimiter= ",")
 labels = labels [:,1]
 image_matrix = aux.images_as_matrix()
-labelsLabeled = len(labels[labels[:]>0]) #pode ser 81
+labelsLabeled = len(labels[labels[:]>0])
 
 PCA_features = pca(image_matrix)
 kernelPCA_features = kernel_pca(image_matrix)
@@ -157,11 +152,10 @@ plt.ylabel("Univariate score ($-Log(p_{value})$)")
 plt.xticks(np.arange(0,18,1))
 plt.show()
 
-#After analysis of the plot we concluded that there are 5 features with significant values then k=5. 
+#After analysis of the plot we concluded that there are 5 features with significant values then k=5 in the SelectKBest. 
 image_features = selector.transform(image_features) 
 
 
-#df = pd.DataFrame(images_new, columns = ['0','1','2','3','4'])#,'5','6','7','8','9','10','11','12','13','14','15','16','17'])
 df = pd.DataFrame(image_features, columns = np.arange(0,5,1))
 pd.plotting.scatter_matrix(df, hist_kwds={'bins':30})
 plt.suptitle('Scatter matrix')
@@ -196,7 +190,7 @@ for n in clusterArray:
     print("Purity:", purity_agg)
     agg_matrix[4][n-2] = purity_agg
     
-    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
+    #Our chosen number of clusters to use the report clusters to show in the html
     if n == 6:
     	aux.report_clusters(np.array(range(image_features.shape[0])), agg_clust_pred, "testAgg6.html")
     
@@ -215,7 +209,7 @@ for n in clusterArray:
     print("Purity:", purity_spe)
     spectral_matrix[4][n-2] = purity_spe
     
-    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
+    #Our chosen number of clusters to use the report clusters to show in the html
     if n == 6:
         aux.report_clusters(np.array(range(image_features.shape[0])), spectral_clust_pred, "testSpe6.html")
     
@@ -236,7 +230,7 @@ for n in clusterArray:
     print("K-means loss / SSE:", sse_kmeans)
     kmeansloss.append(sse_kmeans)
     
-    #tessssssssssssssssssssssssssssssteeeeeeeeeeeee
+    #Our chosen number of clusters to use the report clusters to show in the html
     if n==6:
         aux.report_clusters(np.array(range(image_features.shape[0])), kmeans_clust_pred, "testKmeans6.html")
     
@@ -267,7 +261,7 @@ for i in range(0,2):
             break
 
 
-# Plot training vs cross validation error, parameter h tuning
+# Plot the k means loss
 fig, ax = plt.subplots()
 plt.xlabel('Number of clusters')
 plt.ylabel('K-means loss')
@@ -278,31 +272,28 @@ plt.show()
 ##DBSCAN with the data set to anwer question Q6
 print ("-----------------DBSCAN----------QUESTION6")
 
+#Inspirede in sklearn documentation
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors # importing the library
 from sklearn import metrics
 
-neighb = NearestNeighbors(n_neighbors=8) # creating an object of the NearestNeighbors class
-nbrs=neighb.fit(image_features) # fitting the data to the object
+neighb = NearestNeighbors(n_neighbors=8) 
+nbrs=neighb.fit(image_features)
 distances,indices=nbrs.kneighbors(image_features)
 
-distances = np.sort(distances, axis = 0) # sorting the distances
-distances = distances[:, 1] # taking the second column of the sorted distances
-plt.rcParams['figure.figsize'] = (5,3) # setting the figure size
-plt.plot(distances) # plotting the distances
+distances = np.sort(distances, axis = 0) 
+distances = distances[:, 1] 
+plt.plot(distances)
 plt.title ("Optimal eps using KNN method")
 plt.show()
+
 
 #From the plot we can observe that the point of maximum curvature is located around
 #optimum epsilon reaches 0,8
 #Min Samples we used 8 because it is image_Features dimensions * 2 as recommended by several papers
-
-
-#PODEMOS VARIAR O VALOR DE EPS E MIN SAMPLES SE QUISERESSSSSSSSSSSSSSS
 db = DBSCAN(eps=0.8, min_samples=8).fit(image_features)
 labels = db.labels_
 
-# Number of clusters in labels, ignoring noise if present.
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 n_noise_ = list(labels).count(-1)
 

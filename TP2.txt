@@ -56,7 +56,7 @@ of the data multiplied by 2 and for epsilon value we used KNN neighbours method 
 for the value of eps where the curve has the largest curvature. This took the values to be eps equal to 0.8 and min Points equal to 8.
 The biggest advantages that the biologists can have with this method is that there is no need to explicit the number of clusters so the algorithm will
 fit to the data according to the given parameters and some points will be considered noise, giving the oppurtunity to reject some samples in the data set.
-"DBSCAN_eps"
+"DBSCAN_eps.png"
 
 (Optional) Q7: Explain how you selected the best attributes for the clustering phase. In particular, indicate the visualization methods used to explore the extracted attributes and any statistical tests used.
 R7: To be able to perform the clustering algortihms with the best features available of the data, we started using the SelectKBest function from the sklearn library to select the features that have the highest scores
