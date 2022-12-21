@@ -275,6 +275,45 @@ plt.plot(clusterArray, kmeansloss, '-b')
 plt.show()
 
 
+##DBSCAN with the data set to anwer question Q6
+print ("-----------------DBSCAN----------QUESTION6")
+
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors # importing the library
+from sklearn import metrics
+
+neighb = NearestNeighbors(n_neighbors=8) # creating an object of the NearestNeighbors class
+nbrs=neighb.fit(image_features) # fitting the data to the object
+distances,indices=nbrs.kneighbors(image_features)
+
+distances = np.sort(distances, axis = 0) # sorting the distances
+distances = distances[:, 1] # taking the second column of the sorted distances
+plt.rcParams['figure.figsize'] = (5,3) # setting the figure size
+plt.plot(distances) # plotting the distances
+plt.title ("Optimal eps using KNN method")
+plt.show()
+
+#From the plot we can observe that the point of maximum curvature is located around
+#optimum epsilon reaches 0,8
+#Min Samples we used 8 because it is image_Features dimensions * 2 as recommended by several papers
+
+
+#PODEMOS VARIAR O VALOR DE EPS E MIN SAMPLES SE QUISERESSSSSSSSSSSSSSS
+db = DBSCAN(eps=0.8, min_samples=8).fit(image_features)
+labels = db.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise_ = list(labels).count(-1)
+
+print("Estimated number of clusters of DBSCAN: %d" % n_clusters_)
+print("Estimated number of noise points of DBSCANS: %d" % n_noise_)  
+print(f"Silhouette Coefficient of DBSCAN: {metrics.silhouette_score(image_features, labels):.3f}")
+
+
+
+
+
 
 
 
